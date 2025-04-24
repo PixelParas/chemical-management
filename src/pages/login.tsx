@@ -1,5 +1,6 @@
+// src/pages/login.tsx
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
@@ -7,12 +8,23 @@ import { Label } from "@/components/ui/label";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { AlertTriangle, Lock, Loader2, User } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useAuth } from "@/context/AuthContext";
+
+interface LocationState {
+  from?: {
+    pathname: string;
+  };
+}
 
 export default function Login() {
   const [form, setForm] = useState({ username: "", password: "" });
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
+  const location = useLocation();
+  const { login } = useAuth();
+  
+  const from = (location.state as LocationState)?.from?.pathname || "/";
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setForm((prev) => ({
@@ -39,8 +51,14 @@ export default function Login() {
         throw new Error(data.message || "Invalid credentials. Please try again.");
       }
 
-      localStorage.setItem("token", data.access_token);
-      navigate("/", { replace: true });
+      // Use auth context to login
+      login(data.access_token, {
+        username: form.username,
+        isAdmin: data.is_admin || false
+      });
+
+      // Navigate to the page user was trying to access or to home
+      navigate(from, { replace: true });
     } catch (err: any) {
       setError(err.message || "Login failed. Please check your connection and try again.");
     } finally {
@@ -56,7 +74,7 @@ export default function Login() {
             <div className="mx-auto h-16 w-16 rounded-full bg-blue-100 flex items-center justify-center mb-2">
               <Lock className="h-8 w-8 text-blue-600" />
             </div>
-            <CardTitle className="text-2xl font-bold">Welcome</CardTitle>
+            <CardTitle className="text-2xl font-bold">Welcome to ChemTrack</CardTitle>
             <CardDescription className="text-gray-500">
               Enter your credentials to access your account
             </CardDescription>
@@ -85,7 +103,7 @@ export default function Login() {
                     onChange={handleChange}
                     className="pl-10"
                     required
-                    autoComplete="email"
+                    autoComplete="username"
                   />
                 </div>
               </div>
@@ -93,7 +111,7 @@ export default function Login() {
               <div className="space-y-2">
                 <div className="flex justify-between">
                   <Label htmlFor="password">Password</Label>
-                  <a href="/forgot-password" className="text-sm text-blue-600 hover:text-blue-800">
+                  <a href="#" className="text-sm text-blue-600 hover:text-blue-800">
                     Forgot password?
                   </a>
                 </div>

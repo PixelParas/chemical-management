@@ -66,7 +66,7 @@ export default function Home() {
 
   return (
     <div className="flex flex-col min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
-      <Navbar loggedIn={loggedIn} />
+      <Navbar />
       <div className="max-w-7xl w-full mx-auto px-4 py-6 flex-grow">
         <div className="flex flex-col gap-4 mb-4">
           <div className="flex items-center">
