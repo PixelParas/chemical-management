@@ -4,9 +4,9 @@ import Chemicals from "./pages/chemicals";
 import Login from "./pages/login";
 import { AuthProvider } from "./context/AuthContext";
 import ProtectedRoute from "./components/ProtectedRoute";
-import AdminDashboard from "./pages/admin/dashboard";
+import AdminDashboard from "./pages/admin/Dashboard";
 import ManageShelves from "./pages/admin/ManageShelves";
-// import ManageChemicals from "./pages/admin/ManageChemicals";
+import ManageChemicals from "./pages/admin/ManageChemicals";
 
 function App() {
   return (
@@ -35,14 +35,14 @@ function App() {
               </ProtectedRoute>
             }
           />
-          {/* <Route 
+          <Route 
             path="/admin/chemicals" 
             element={
               <ProtectedRoute adminOnly={true}>
                 <ManageChemicals />
               </ProtectedRoute>
             }
-          /> */}
+          />
           <Route path="*" element={<div>404 Not Found</div>} />
         </Routes>
       </Router>
