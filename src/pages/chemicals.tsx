@@ -1,9 +1,13 @@
-import React, { useState, useEffect } from "react";
-import { Input } from "@/components/ui/input";
-import { Card, CardContent } from "@/components/ui/card";
+import { useState, useEffect } from "react"
+import Navbar from "@/components/Navbar"
+import SearchBar from "@/components/SearchBar"
+import FilterBar from "@/components/FilterBar"
+import ChemicalCard from "@/components/ChemicalCard"
+import EmptyState from "@/components/EmptyState"
+import { LayoutGrid, Table } from "lucide-react"
 
 const chemicals = [
-  { name: "Acetone", formula: "C3H6O", location: "Shelf A", bottle: "1" },
+  { name: "Acetone", formula: "C3H6O", location: "Shelf A", bottle: "A001" },
   { name: "Ethanol", formula: "C2H5OH", location: "Shelf B", bottle: "2" },
   { name: "Sulfuric Acid", formula: "H2SO4", location: "Concentrated Chemicals Shelf", bottle: "3" },
   { name: "Sodium Hydroxide", formula: "NaOH", location: "Shelf C", bottle: "4" },
@@ -23,9 +27,8 @@ const chemicals = [
   { name: "Sodium Chloride", formula: "NaCl", location: "Shelf A", bottle: "18" },
   { name: "Copper Sulfate", formula: "CuSO4", location: "Shelf B", bottle: "19" },
   { name: "Silver Nitrate", formula: "AgNO3", location: "Concentrated Chemicals Shelf", bottle: "20" },
-  // Generated using ChatGPT dont bother reporting mistakes.
+  { name: "Silver Nitrate", formula: "AgNO3", location: "Custom Shelf", bottle: "20" },
 ];
-
 
 function formatFormula(formula: string) {
   return formula.split("").map((char, index) => {
@@ -34,80 +37,97 @@ function formatFormula(formula: string) {
         <sub key={index} className="text-xs">
           {char}
         </sub>
-      );
+      )
     }
     if (char === "+") {
       return (
         <sup key={index} className="text-xs">
           {char}
         </sup>
-      );
+      )
     }
-    return char;
-  });
+    return char
+  })
 }
 
-export default function Chemicals() {
-  const [search, setSearch] = useState("");
-
-  useEffect(() => {
-    const scrollableDiv = document.querySelector(".scrollable-cards");
-    if (scrollableDiv) {
-      scrollableDiv.scrollTop = 0;
-    }
-  }, [search]);
+export default function Home() {
+  const [search, setSearch] = useState("")
+  const [selectedLocation, setSelectedLocation] = useState("")
+  const [loggedIn, setLoggedIn] = useState(true)
+  const [viewMode, setViewMode] = useState("card") // New state for view mode
 
   const filteredChemicals = chemicals.filter((chemical) =>
-    chemical.name.toLowerCase().includes(search.toLowerCase()) ||
-    chemical.formula.toLowerCase().includes(search.toLowerCase())
-  );
+    (chemical.name.toLowerCase().includes(search.toLowerCase()) ||
+     chemical.formula.toLowerCase().includes(search.toLowerCase())) &&
+    (selectedLocation ? chemical.location === selectedLocation : true)
+  )
+
+  const uniqueLocations = [...new Set(chemicals.map(c => c.location))]
 
   return (
-    <div className="flex flex-col min-h-screen p-4 bg-gray-100">
-      {/* Search Bar */}
-      <div className="w-full mb-4 sticky top-4 bg-gray-100 z-10">
-        <Input
-          type="text"
-          placeholder="Search chemicals or formulas..."
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          className="p-3 border border-gray-300 rounded-md w-full shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-200 transition-all pr-10"
-        />
-        <span className="absolute inset-y-0 right-3 flex items-center pointer-events-none">
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            className="h-5 w-5 text-gray-400"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M8 16l-4-4m0 0l4-4m-4 4h16"
-            />
-          </svg>
-        </span>
-      </div>
-
-      {/* Scrollable Cards */}
-      <div className="flex flex-col gap-4 overflow-y-auto flex-grow scrollable-cards">
-        {filteredChemicals.map((chemical, index) => (
-          <Card 
-          key={index} 
-          className="p-4 shadow-md bg-white rounded-xl cursor-pointer" 
-          //onClick={() => router.push(`/chemical/${encodeURIComponent(chemical.name)}`)}
-        >
-          <CardContent>
-            <h2 className="text-lg font-semibold">{chemical.name}</h2>
-            <p className="text-sm text-gray-600">Formula: {chemical.formula}</p>
-            <p className="text-sm text-gray-600">Location: {chemical.location}</p>
-            <p className="text-sm text-gray-600">Bottle No: {chemical.bottle}</p>
-          </CardContent>
-        </Card>
-        ))}
+    <div className="flex flex-col min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
+      <Navbar />
+      <div className="max-w-7xl w-full mx-auto px-4 py-6 flex-grow">
+        <div className="flex flex-col gap-4 mb-4">
+          <div className="flex items-center">
+            <div className="flex-grow">
+              <SearchBar search={search} setSearch={setSearch} />
+            </div>
+            <div className="bg-white rounded-lg shadow-sm flex p-1 ml-4">
+              <button
+                onClick={() => setViewMode("card")}
+                className={`p-2 rounded ${viewMode === 'card' ? 'bg-blue-100 text-blue-600' : ''}`}
+                title="Card view"
+              >
+                <LayoutGrid size={20} />
+              </button>
+              <button
+                onClick={() => setViewMode("table")}
+                className={`p-2 rounded ${viewMode === 'table' ? 'bg-blue-100 text-blue-600' : ''}`}
+                title="Table view"
+              >
+                <Table size={20} />
+              </button>
+            </div>
+          </div>
+          <div>
+            <FilterBar uniqueLocations={uniqueLocations} handleFilter={setSelectedLocation} />
+          </div>
+        </div>
+        
+        {filteredChemicals.length === 0 ? (
+          <EmptyState />
+        ) : viewMode === "card" ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {filteredChemicals.map((chemical, index) => (
+              <ChemicalCard key={index} chemical={chemical} />
+            ))}
+          </div>
+        ) : (
+          <div className="bg-white rounded-lg shadow overflow-hidden">
+            <table className="min-w-full divide-y divide-gray-200">
+              <thead className="bg-gray-50">
+                <tr>
+                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
+                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Formula</th>
+                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Location</th>
+                  <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Bottle</th>
+                </tr>
+              </thead>
+              <tbody className="bg-white divide-y divide-gray-200">
+                {filteredChemicals.map((chemical, index) => (
+                  <tr key={index} className="hover:bg-gray-50">
+                    <td className="px-6 py-4 whitespace-nowrap">{chemical.name}</td>
+                    <td className="px-6 py-4 whitespace-nowrap">{formatFormula(chemical.formula)}</td>
+                    <td className="px-6 py-4 whitespace-nowrap">{chemical.location}</td>
+                    <td className="px-6 py-4 whitespace-nowrap">{chemical.bottle}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
       </div>
     </div>
-  );
+  )
 }
