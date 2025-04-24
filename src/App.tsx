@@ -5,6 +5,7 @@ import {
     Route,
 } from "react-router-dom";
 import Chemicals from "./pages/chemicals";
+import Login from "./pages/login";
 
 function App() {
   return (
@@ -12,6 +13,7 @@ function App() {
           <Routes>
               <Route path="/" element={<Chemicals />} />
               <Route path="/chemicals" element={<Chemicals />} />
+              <Route path="/login" element={<Login />} />
           </Routes>
       </Router>
   );
